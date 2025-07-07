@@ -47,4 +47,4 @@ rsync -au phys1657@htc-login.arc.ox.ac.uk:/data/phys-tnt-library/phys1657/NG_PDP
 rsync -au phys1657@htc-login.arc.ox.ac.uk:/data/phys-tnt-library/phys1657/AtmosTensorNetworks/data/{figures,reports} /Users/ngourianov/Documents/PYTHON/PostDocProjects/AtmosTensorNetworks/data/
 
 ## hopten
-rsync -au phys1657@htc-login.arc.ox.ac.uk:/data/phys-tnt-library/phys1657/Neural/data/ /Users/ngourianov/Documents/PYTHON/PostDocProjects/Neural/data/
+rsync -au phys1657@htc-login.arc.ox.ac.uk:/data/phys-tnt-library/phys1657/hopten/data/ /Users/ngourianov/Documents/PYTHON/PostDocProjects/hopten/data/

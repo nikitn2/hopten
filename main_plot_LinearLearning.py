@@ -18,15 +18,17 @@ pd.set_option("display.max_colwidth", 1000)
 
 if __name__ == '__main__':
     
-    # Select datasets    
+    # Select datasets & poly-orders
     datasets = ["years", "casp", "wines", "houses"]
+    polys    = [1,2,3,4]
     
     # Load datasets
     dfs = []
     for dataset in datasets:
-        out_file = os.path.join(cfg.dir_data, "out", f"{dataset}.pkl")
-        if os.path.isfile(out_file): dfs.append(pd.read_pickle(out_file))
-    
+        for poly in polys:
+            out_file = os.path.join(cfg.dir_data, "out", f"{dataset}_poly{poly}.pkl")
+            if os.path.isfile(out_file): dfs.append(pd.read_pickle(out_file))
+        
     # Concatenate into single dataframe
     df_full = pd.concat(dfs, axis=0)
     d = df_full.reset_index()                    # flatten MultiIndex if present
