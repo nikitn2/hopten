@@ -93,30 +93,23 @@ def load_proc(dataset, sort = True, scale = "quantile_uniform", transpose=True):
         y_train = y_train[:,np.newaxis]
         y_test  = y_test[:,np.newaxis]
     
-    # Quantile transform if requested
+    # Quantile transform X if requested
     if scale in ["quantile_uniform", "quantile_uniform_tanh" "quantile_normal", "quantile_normal_tanh" ]:
         scaler_quant = skpp.QuantileTransformer(output_distribution=scale.split("_")[1],subsample=1_000_000,random_state=0)
         X_train = scaler_quant.fit_transform(X_train)
         X_test  = scaler_quant.transform(X_test)
-        if classific == False: y_train = scaler_quant.fit_transform(y_train); y_test = scaler_quant.transform(y_test)
     
-    # Standardise in any-case
+    # Standardise X,y in any-case
     scaler_standard = skpp.StandardScaler()
-    X_train = scaler_standard.fit_transform(X_train)
-    X_test  = scaler_standard.transform(X_test)
-    if classific == False: y_train = scaler_standard.fit_transform(y_train); y_test  = scaler_standard.transform(y_test)
+    X_train = scaler_standard.fit_transform(X_train); X_test  = scaler_standard.transform(X_test)
+    if classific == False: y_train = scaler_standard.fit_transform(y_train); y_test  = scaler_standard.transform(y_test)        
     
-    # Finally, force X,y to be within (-1,1) band if requested
-    if scale in ["quantile_uniform_tanh", "quantile_normal_tanh"]:
-        X_train_absmax = np.abs(X_train).max()
-        X_train = np.tanh(X_train/X_train_absmax)
-        X_test  =  np.tanh(X_test/X_train_absmax)
-        if classific == False:
-            y_train_absmax = np.abs(y_train).max()
-            y_train =  np.tanh(y_train/y_train_absmax)
-            y_test  =  np.tanh(y_test/y_train_absmax)
-    
-    # Transpose to put into right format for mpsify, and finish
+    # And force X towards the (-1,1) band
+    scaler_maxabs = skpp.MaxAbsScaler()
+    X_train = scaler_maxabs.fit_transform(X_train)
+    X_test = scaler_maxabs.transform(X_test)
+
+    # Transpose to put into right format for mpsify before finishing
     if transpose==True:
         X_train = X_train.T; y_train = y_train.T
         X_test  = X_test.T;  y_test  = y_test.T
@@ -129,8 +122,8 @@ if __name__ == '__main__':
     # Main hyperparameters
     if len(sys.argv)>1: polys, cutoffs, alphas, chis_mpo, eps_MPOs, dataset = parse_args(); make_plots = False
     else:
-        polys    = [2]
-        cutoffs  = {"X": [1e-8, 1e-12, 1e-16], "y":[1e-16] }
+        polys    = [1]
+        cutoffs  = {"X": [1e-4, 1e-8, 1e-12, 1e-16], "y":[1e-16] }
         alphas   = [1e-8, 0.001, 0.01, 0.1, 1, 10, 100, 1000] # Tikhonov regularisation parameter
         chis_mpo = [2] # Must be >1 for ML code to run
         eps_MPOs = [1e-9]
@@ -159,6 +152,7 @@ if __name__ == '__main__':
                     y_train_mps, y_train_compr = ln.mpsify(np.float64(y_train),split=True, chi=None, cutoff=cutoff_y, output=True)#; print(1-np.mean(y_train_compr.round(0)==y_train))
                     X_test_mps, X_test_compr   = ln.mpsify(           X_test,  split=True, chi=None, cutoff=1e-16,    poly = poly)
                     y_test_mps, y_test_compr   = ln.mpsify(np.float64(y_test), split=True, chi=None, cutoff=1e-16,    output = True)#; print(1-np.mean(y_test_compr.round(0)==y_test))
+                    
                     # and save
                     data = (X_train, y_train, X_train_mps, y_train_mps, X_train_compr, y_train_compr, 
                             X_test,  y_test,  X_test_mps,  y_test_mps,  X_test_compr,  y_test_compr), classific
@@ -171,14 +165,13 @@ if __name__ == '__main__':
                     classic_scores = []
                     for alpha in alphas:
                         if classific == False:
-                            score_class,_ = ln.classical_linreg(X_train_compr.T, X_test_compr.T, y_train_compr.flatten(), y_test_compr.flatten(),poly=poly, alpha=alpha*poly)
+                            score_class, _ = ln.classical_linreg(X_train_compr.T, X_test_compr.T, y_train_compr.flatten(), y_test_compr.flatten(),poly=poly, alpha=alpha*poly)
                             classic_scores.append(score_class)
-                            #print(score_class)
                         else:
                             #score_class = ln.classical_logreg(X_train_compr, X_test_compr, y_train_compr, y_test_compr, poly = poly, alpha=alpha, penalty="l2", solver= "liblinear")
                             #classic_scores.append(score_class)
-                            exit(1) # Classification currently not supported
-                     
+                            sys.exit(1) # Classification currently not supported
+                    
                     ## Now do MPO regression
                     for chi_mpo in chis_mpo:
                         for eps_MPO in eps_MPOs:
@@ -223,7 +216,7 @@ if __name__ == '__main__':
                             mpo_top_score = max(mpo_scores); mpo_top_alpha = alphas[np.argmax(mpo_scores)]
                             
                             # Save output
-                            out_file = os.path.join(cfg.dir_data, "out", f"{dataset}.pkl")
+                            out_file = os.path.join(cfg.dir_data, "out", f"{dataset}_poly{poly}.pkl")
                             os.makedirs(os.path.dirname(out_file), exist_ok=True)
                             if os.path.isfile(out_file): df = pd.read_pickle(out_file) # load existing output files if exists 
                             else: # make an empty MultiIndex with the right names
