@@ -426,8 +426,9 @@ def regr_solve_explicitCG(mpo_var, sites_to_opt, chi_max, in_out_L_mpses, envs_R
         # Regularise with penalty term (of |Hs-j|^2 loss)
         H += alpha_mpo*np.eye(*H.shape)
         
-        s_final = np.linalg.lstsq(H,j, rcond=None)[0]
-    
+        try: s_final = np.linalg.lstsq(H,j, rcond=None)[0]
+        except: s_final = j
+        
         #print("condNum=",np.linalg.cond(H),"i=", site_to_opt)#; mpo_var.show()
     
     # Put back into MPO, potentially split, and return

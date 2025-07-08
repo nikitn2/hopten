@@ -124,7 +124,7 @@ if __name__ == '__main__':
     else:
         polys    = [4]
         cutoffs  = {"X": [1e-8], "y":[1e-16] }
-        alphas   = [1e-8, 0.001, 0.01, 0.1, 1, 10, 100, 1000] # Tikhonov regularisation parameter
+        alphas   = [1]#[1e-8, 0.001, 0.01, 0.1, 1, 10, 100, 1000] # Tikhonov regularisation parameter
         chis_mpo = [6,8] # Must be >1 for ML code to run
         eps_MPOs = [1e-9]
         dataset  = "wines"
