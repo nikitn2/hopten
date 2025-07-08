@@ -117,19 +117,17 @@ def load_proc(dataset, sort = True, scale = "quantile_uniform", transpose=True):
 
 if __name__ == '__main__':
     
-    #XXX TODO: Wines & years submitted and should be done; handle house (1,2,3,4) and casp (1,2,3) XXX
-    
-    ## WHY ISNT CASP saving on arc?? ##
-    
+    #XXX TODO: Poly-4 casp & house left only; rest of it is done!! XXX
+        
     # Main hyperparameters
     if len(sys.argv)>1: polys, cutoffs, alphas, chis_mpo, eps_MPOs, dataset = parse_args(); make_plots = False
     else:
-        polys    = [1,2]
-        cutoffs  = {"X": [1e-4, 1e-8, 1e-12, 1e-16], "y":[1e-16] }
+        polys    = [4]
+        cutoffs  = {"X": [1e-8], "y":[1e-16] }
         alphas   = [1e-8, 0.001, 0.01, 0.1, 1, 10, 100, 1000] # Tikhonov regularisation parameter
-        chis_mpo = [2,4,6,8] # Must be >1 for ML code to run
+        chis_mpo = [6,8] # Must be >1 for ML code to run
         eps_MPOs = [1e-9]
-        dataset  = "casp"
+        dataset  = "wines"
         
     # Further hyperparameters
     n_local_its = 50

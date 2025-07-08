@@ -477,7 +477,7 @@ def linear_sweeping(mpo_init, chi_max, loss_fn, loss_kwargs, eps = 1e-16, max_sw
             # Optimise. For convergence reasons, explicitCG uses one-site, autodiff two-site.
             if optimizer_opts["optimizer"] == "explicitCG":
                 sites_to_update = [i]
-                mpo_new = regr_solve_explicitCG(mpo_new, sites_to_update, chi_max, maxiter = n, **loss_kwargs); print(f"CG-update at sites={str(sites_to_update):<10} gives loss: {loss_fn(mpo_var = mpo_new,**loss_kwargs):.6e}")
+                mpo_new = regr_solve_explicitCG(mpo_new, sites_to_update, chi_max, maxiter = n, **loss_kwargs); print(f"\rCG-update at sites={str(sites_to_update):<5} during sweep={sweeps:<5} gives loss: {loss_fn(mpo_var = mpo_new,**loss_kwargs):.6e}",end = "", flush = True )
             else:
                 sites_to_update = [j for j in range( i, min(i+2,N) )] if sgn==+1 else [j for j in range( max(0,i-1), i+1 )] 
                 tagsToOpti = [sti.format(j) for j in sites_to_update]
