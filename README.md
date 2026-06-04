@@ -2,4 +2,6 @@
 
 Both regression and classification is envisioned, although the classification functionality is unfinished. It is straightforward to load any dataset in, with current support for pulling “Year Prediction MSD”, “House(16H)”, “Wine Quality” and “CASP” datasets from OpenML or the UC Irvine ML Repositories.
 
+Modules from https://github.com/nikitn2/tendeq and https://github.com/bsc-quantic/tn4ml are used in `hopten`. 
+
 Warning: this is an experimental research code in an unfinished state.
